@@ -14,7 +14,11 @@ export const createS11n = <T>({ key, schema, defaultValue }: CreateS11nOptions<T
     const deserialize = () => {
         const item = localStorage.getItem(key);
         if (item) {
-            return schema.parse(JSON.parse(item));
+            try {
+                return schema.parse(JSON.parse(item));
+            } catch (error) {
+                console.error(`Key "${key}" could not be parsed: ${error}`);
+            }
         }
         return defaultValue;
     };
