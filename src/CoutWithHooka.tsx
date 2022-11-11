@@ -1,22 +1,22 @@
 import { z } from "zod";
-import { createUiSettingsHook, localStorageStore } from "./hooks/useUiSettings";
+import { createUserSettingssHook, localStorageStore } from "./hooks/useUserSettings";
 
-const useUiSettings = createUiSettingsHook(localStorageStore);
+const useUserSettingss = createUserSettingssHook(localStorageStore);
 
 export const CountWithHooks = () => {
-    const countSchema = z.number().int().min(0);
-    
-    const [countUiSettings, setCountUiSettings] = useUiSettings({
-        key: 'countHook',
-        schema: countSchema,
-        defaultValue: 13,
-    });
+  const countSchema = z.number().int().min(0);
 
-    return (
-        <button onClick={() => {
-          setCountUiSettings(countUiSettings + 1);
-        }}>
-          count is {countUiSettings}
-        </button>
-    )
+  const [countUserSettingss, setCountUserSettingss] = useUserSettingss({
+    key: 'countHook',
+    schema: countSchema,
+    defaultValue: 13,
+  });
+
+  return (
+    <button onClick={() => {
+      setCountUserSettingss(countUserSettingss + 1);
+    }}>
+      count is {countUserSettingss}
+    </button>
+  )
 }

@@ -8,7 +8,7 @@ function App() {
   
   return (
     <div className="App">
-      <h1>UI Settings MVP</h1>
+      <h1>User Settings MVP</h1>
       <div className="card">
         <p>
           Count
