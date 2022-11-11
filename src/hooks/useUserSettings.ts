@@ -12,7 +12,7 @@ interface SerializedStore<TError extends Error = Error> {
   };
 }
 
-interface UserSettingssStore<T> {
+interface UserSettingsStore<T> {
   key: string;
   schema: z.ZodSchema<T>;
   defaultValue: T;
@@ -29,22 +29,10 @@ export const localStorageStore: SerializedStore = {
   }
 }
 
-export const createUserSettingssHook = (store?: SerializedStore) =>
-  <TData>({ key, schema, defaultValue }: UserSettingssStore<TData>) => {
-    const [userSettingss, _setUserSettingss] = useState<TData>(defaultValue);
+export const createUserSettingsHook = (store?: SerializedStore) =>
+  <TData extends Record<string, unknown>>({ key, schema, defaultValue }: UserSettingsStore<TData>) => {
 
     const _store = store ?? localStorageStore;
-
-    const setUserSettingss = (value: TData) => {
-      try {
-        const { data } = _store.mutation(key, JSON.stringify(schema.parse(value)));
-        
-        // May not be necassary if the mutation invalidates the query
-        _setUserSettingss(value);
-      } catch (error) {
-        console.error(`Key "${key}" could not be set: ${error}`);
-      }
-    };
 
     const { data, error } = _store.useQuery(key);
 
@@ -52,15 +40,29 @@ export const createUserSettingssHook = (store?: SerializedStore) =>
       console.error(`Key "${key}" could not be fetched: ${error}`);
     }
 
+    let parsedData;
     if (data && !error) {
       try {
-        const parsedData = schema.parse(JSON.parse(data));
-        if (parsedData !== userSettingss) {
-          _setUserSettingss(parsedData);
-        }
+        parsedData = schema.parse(JSON.parse(data));
       } catch (error) {
         console.error(`Key "${key}" could not be parsed: ${error}`);
       }
     }
-    return [userSettingss, setUserSettingss] as const;
+
+    const [userSettings, _setUserSettings] = useState<TData>(parsedData ?? defaultValue);
+
+    const setUserSettings = (value: Partial<TData>) => {
+      const newValue = { ...userSettings, ...value };
+      try {
+        const { data } = _store.mutation(key, JSON.stringify(schema.parse(newValue)));
+        // return data can be parsed and used to update state instead of newValue
+
+        // This (and the whole useState) might not be necassary if this mutation invalidates the query and makes it to re-run
+        _setUserSettings(newValue);
+      } catch (error) {
+        console.error(`Key "${key}" could not be set: ${error}`);
+      }
+    };
+
+    return [userSettings, setUserSettings] as const;
   }
