@@ -9,7 +9,7 @@ export const Count = () => {
     const [serialize, deserialize] = createS11n({
         key: 'count',
         schema: countSchema,
-        defaultValue: -5,
+        defaultValue: 7,
     })
 
     const [count, setCount] = useState(deserialize())

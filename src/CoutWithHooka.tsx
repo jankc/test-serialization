@@ -1,5 +1,7 @@
 import { z } from "zod";
-import { useUiSettings } from "./hooks/useUiSettings";
+import { createUiSettingsHook, localStorageStore } from "./hooks/useUiSettings";
+
+const useUiSettings = createUiSettingsHook(localStorageStore);
 
 export const CountWithHooks = () => {
     const countSchema = z.number().int().min(0);
@@ -7,7 +9,7 @@ export const CountWithHooks = () => {
     const [countUiSettings, setCountUiSettings] = useUiSettings({
         key: 'countHook',
         schema: countSchema,
-        defaultValue: 5,
+        defaultValue: 13,
     });
 
     return (
