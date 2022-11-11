@@ -25,4 +25,3 @@ export const createS11n = <T>({ key, schema, defaultValue }: CreateS11nOptions<T
 
     return [serialize, deserialize] as const;
 }
-
