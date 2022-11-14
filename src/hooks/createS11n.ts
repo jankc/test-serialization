@@ -8,7 +8,7 @@ interface CreateS11nOptions<T> {
 
 export const createS11n = <T>({ key, schema, defaultValue }: CreateS11nOptions<T>) => {
   const serialize = (value: T) => {
-    localStorage.setItem(key, JSON.stringify(schema.parse(value)));
+    localStorage.setItem(key, JSON.stringify(value));
   };
 
   const deserialize = () => {

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { z } from "zod";
 
 interface SerializedStore<TError extends Error = Error> {
   useQuery: (key: string) => {
@@ -14,8 +13,8 @@ interface SerializedStore<TError extends Error = Error> {
 
 interface UserSettingsStore<T> {
   key: string;
-  schema: z.ZodSchema<T>;
   defaultValue: T;
+  validate?: (value: unknown) => value is T;
 }
 
 export const localStorageStore: SerializedStore = {
@@ -30,7 +29,11 @@ export const localStorageStore: SerializedStore = {
 }
 
 export const createUserSettingsHook = (store?: SerializedStore) =>
-  <TData extends Record<string, unknown>>({ key, schema, defaultValue }: UserSettingsStore<TData>) => {
+  <TData extends Record<string, unknown>>({
+    key,
+    defaultValue,
+    validate = (value): value is TData => true
+  }: UserSettingsStore<TData>) => {
 
     const _store = store ?? localStorageStore;
 
@@ -40,21 +43,26 @@ export const createUserSettingsHook = (store?: SerializedStore) =>
       console.error(`Key "${key}" could not be fetched: ${error}`);
     }
 
-    let parsedData;
+    let validatedData = defaultValue;
     if (data && !error) {
       try {
-        parsedData = schema.parse(JSON.parse(data));
+        const parsedData = JSON.parse(data);
+        if (validate(parsedData)) {
+          validatedData = parsedData;
+        } else {
+          throw new Error(`Key "${key}" could not be parsed`);
+        }
       } catch (error) {
         console.error(`Key "${key}" could not be parsed: ${error}`);
       }
     }
 
-    const [userSettings, _setUserSettings] = useState<TData>(parsedData ?? defaultValue);
+    const [userSettings, _setUserSettings] = useState<TData>(validatedData);
 
     const setUserSettings = (value: Partial<TData>) => {
       const newValue = { ...userSettings, ...value };
       try {
-        const { data } = _store.mutation(key, JSON.stringify(schema.parse(newValue)));
+        const { data } = _store.mutation(key, JSON.stringify(newValue));
         // return data can be parsed and used to update state instead of newValue
 
         // This (and the whole useState) might not be necassary if this mutation invalidates the query and makes it to re-run

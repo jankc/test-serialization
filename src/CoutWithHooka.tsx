@@ -3,14 +3,20 @@ import { createUserSettingsHook, localStorageStore } from "./hooks/useUserSettin
 
 const useUserSettings = createUserSettingsHook(localStorageStore);
 
+const CountSettings = z.object({
+  count: z.number().int().min(0),
+})
+
+type CountSettings = z.infer<typeof CountSettings>;
+
 export const CountWithHooks = () => {
-  const countSchema = z.object({
-    count: z.number().int().min(0),
-  })
 
   const [countUserSettings, setCountUserSettings] = useUserSettings({
     key: 'countHook',
-    schema: countSchema,
+    validate: (value): value is CountSettings => {
+      const { success } = CountSettings.safeParse(value);
+      return success;
+    },
     defaultValue: { count: 5 },
   });
 
